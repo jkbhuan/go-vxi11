@@ -171,7 +171,7 @@ VXI11_HOST=5.5.5.1 VXI11_DEVICE=inst0 go test -tags integration -v ./vxi11/
 - 读 1.1 MB 的 `:DISP:DATA?`：请求长度用 `maxRecvSize`（1500）要 72 秒，
   用 64 KiB 只要 3.4 秒——这是本包默认 `readSize = 64 KiB` 的原因。
 
-### Tektronix MSO58（`10.42.71.185`，本仓库当前调试设备）
+### Tektronix MSO58（`10.8.0.3`，本仓库当前调试设备）
 
 - portmapper 返回 core 端口 **7000**，`maxRecvSize = 4096`，`abortPort = 7001`。
 - `device_readstb`、锁、`device_clear`、`device_trigger` 均正常；
