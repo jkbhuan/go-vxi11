@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>go-vxi/vxi11 接口说明文档</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --fg:#1c2024; --muted:#5c6773; --line:#dfe3e8;
+    --card:#ffffff; --code-bg:#f2f4f7; --accent:#0b6bcb; --accent-soft:#e7f0fb;
+    --warn-bg:#fff8e6; --warn-line:#e6c34a; --danger:#b3261e; --ok:#1a7f37;
+    --mono:"Cascadia Mono","Consolas","SF Mono","Menlo","DejaVu Sans Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font:15px/1.75 -apple-system,"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+  }
+  .layout{display:flex; align-items:flex-start; max-width:1400px; margin:0 auto}
+  /* ---------- 侧边导航 ---------- */
+  nav{
+    position:sticky; top:0; flex:0 0 264px; height:100vh; overflow:auto;
+    padding:24px 16px 48px; border-right:1px solid var(--line); background:#fff;
+  }
+  nav h1{font-size:15px; margin:0 0 4px; letter-spacing:.02em}
+  nav .ver{font-size:12px; color:var(--muted); margin-bottom:18px}
+  nav ol{list-style:none; margin:0; padding:0}
+  nav ol ul{list-style:none; margin:2px 0 8px; padding-left:12px}
+  nav a{display:block; padding:3px 8px; border-radius:5px; color:var(--muted);
+        text-decoration:none; font-size:13.5px; border-left:2px solid transparent}
+  nav a:hover{background:var(--accent-soft); color:var(--accent)}
+  nav > ol > li > a{color:var(--fg); font-weight:600; margin-top:6px}
+  /* ---------- 正文 ---------- */
+  main{flex:1 1 auto; min-width:0; padding:32px 44px 120px; background:var(--bg)}
+  header.doc{border-bottom:2px solid var(--line); padding-bottom:18px; margin-bottom:8px}
+  header.doc h1{margin:0 0 6px; font-size:30px; letter-spacing:-.01em}
+  header.doc p{margin:4px 0; color:var(--muted)}
+  section{margin-top:44px; scroll-margin-top:16px}
+  h2{font-size:23px; padding-bottom:8px; border-bottom:1px solid var(--line); margin:0 0 18px}
+  h3{font-size:17.5px; margin:30px 0 10px}
+  h4{font-size:15px; margin:22px 0 8px; color:var(--muted);
+     text-transform:none; letter-spacing:.01em}
+  p{margin:10px 0}
+  a{color:var(--accent)}
+  code{font-family:var(--mono); font-size:.88em; background:var(--code-bg);
+       padding:.15em .38em; border-radius:4px}
+  pre{font-family:var(--mono); font-size:13px; line-height:1.62; background:#1e2430;
+      color:#e6edf3; padding:14px 16px; border-radius:8px; overflow:auto; margin:12px 0}
+  pre code{background:none; padding:0; color:inherit; font-size:inherit}
+  pre .c{color:#8b98a8}   /* 注释 */
+  pre .k{color:#ff9d6b}   /* 关键字 */
+  pre .s{color:#9ce49c}   /* 字符串 */
+  /* ---------- 表格 ---------- */
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px;
+        background:var(--card); border:1px solid var(--line); border-radius:8px;
+        overflow:hidden}
+  th,td{text-align:left; vertical-align:top; padding:8px 11px; border-bottom:1px solid var(--line)}
+  th{background:#eef1f5; font-weight:600; font-size:13px; white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  td code{background:#f0f3f7}
+  .sig{font-family:var(--mono); font-size:12.8px; white-space:normal; word-break:break-word}
+  /* ---------- 卡片 / 提示 ---------- */
+  .api{background:var(--card); border:1px solid var(--line); border-radius:10px;
+       padding:14px 18px; margin:16px 0; box-shadow:0 1px 2px rgba(16,24,40,.04)}
+  .api > h3{margin:0 0 2px; font-size:17px}
+  .api .sigline{font-family:var(--mono); font-size:12.8px; background:var(--accent-soft);
+       color:#0a4f96; padding:7px 10px; border-radius:6px; margin:8px 0 12px;
+       display:block; word-break:break-word; white-space:pre-wrap}
+  .api dl{margin:0; display:grid; grid-template-columns:88px 1fr; gap:4px 12px; font-size:14px}
+  .api dt{color:var(--muted); font-size:12.5px; padding-top:2px}
+  .api dd{margin:0}
+  .api .body{font-size:14px}
+  .note,.warn,.danger,.ok{border-radius:8px; padding:11px 15px; margin:14px 0; font-size:14px;
+       border-left:4px solid}
+  .note{background:var(--accent-soft); border-color:var(--accent)}
+  .warn{background:var(--warn-bg); border-color:var(--warn-line)}
+  .danger{background:#fdecea; border-color:var(--danger)}
+  .ok{background:#e8f5ec; border-color:var(--ok)}
+  .note b,.warn b,.danger b,.ok b{display:block; margin-bottom:2px}
+  .badge{display:inline-block; font-size:11.5px; font-weight:600; padding:1px 7px;
+         border-radius:20px; vertical-align:1px; margin-left:6px}
+  .badge.mvp{background:#e8f5ec; color:var(--ok)}
+  .badge.opt{background:#eef1f5; color:var(--muted)}
+  .badge.stub{background:#fdecea; color:var(--danger)}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+  @media(max-width:1080px){.grid2{grid-template-columns:1fr}}
+  @media(max-width:900px){
+    nav{display:none} main{padding:22px 18px 90px}
+  }
+  .muted{color:var(--muted)}
+  .toc-num{color:var(--muted); font-variant-numeric:tabular-nums; margin-right:4px}
+  footer{margin-top:70px; padding-top:16px; border-top:1px solid var(--line);
+         color:var(--muted); font-size:13px}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav>
+  <h1>go-vxi / vxi11</h1>
+  <div class="ver">VXI-11 客户端 · 纯 Go · 无第三方依赖</div>
+  <ol>
+    <li><a href="#intro">1. 概述</a></li>
+    <li><a href="#quickstart">2. 快速开始</a></li>
+      <ul>
+        <li><a href="#install">2.1 引入</a></li>
+        <li><a href="#minimal">2.2 最小示例</a></li>
+        <li><a href="#lifecycle">2.3 连接生命周期</a></li>
+      </ul>
+    <li><a href="#const">3. 常量</a></li>
+    <li><a href="#option">4. 选项 Option</a></li>
+    <li><a href="#client">5. Client 方法</a></li>
+      <ul>
+        <li><a href="#m-dial">5.1 建立与关闭</a></li>
+        <li><a href="#m-write">5.2 写入</a></li>
+        <li><a href="#m-read">5.3 读取</a></li>
+        <li><a href="#m-query">5.4 查询</a></li>
+        <li><a href="#m-generic">5.5 通用操作</a></li>
+        <li><a href="#m-lock">5.6 锁</a></li>
+        <li><a href="#m-abort">5.7 abort channel</a></li>
+        <li><a href="#m-getter">5.8 属性读取</a></li>
+      </ul>
+    <li><a href="#errors">6. 错误处理</a></li>
+      <ul>
+        <li><a href="#errcode">6.1 设备错误码</a></li>
+        <li><a href="#localerr">6.2 本地错误</a></li>
+        <li><a href="#errusage">6.3 判定范式</a></li>
+      </ul>
+    <li><a href="#semantics">7. 关键语义</a></li>
+      <ul>
+        <li><a href="#frag">7.1 写入分片</a></li>
+        <li><a href="#longread">7.2 长响应拼接</a></li>
+        <li><a href="#timeout">7.3 超时模型</a></li>
+        <li><a href="#concurrency">7.4 并发</a></li>
+        <li><a href="#rrc">7.5 调用与过程对应表</a></li>
+      </ul>
+    <li><a href="#proto">8. 协议参考</a></li>
+      <ul>
+        <li><a href="#protoconst">8.1 程序号与过程号</a></li>
+        <li><a href="#flags">8.2 标志位</a></li>
+        <li><a href="#reason">8.3 读取 reason 位</a></li>
+        <li><a href="#xdr">8.4 XDR / 记录标记</a></li>
+      </ul>
+    <li><a href="#demo">9. 演示程序</a></li>
+    <li><a href="#test">10. 测试</a></li>
+    <li><a href="#limit">11. 已知限制</a></li>
+    <li><a href="#realworld">12. 真机实测记录</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<header class="doc">
+  <h1>go-vxi/vxi11 接口说明文档</h1>
+  <p>VXI-11（TCP/IP Instrument Protocol）客户端包 · 纯 Go 实现 · 零第三方依赖 · 无 cgo</p>
+  <p class="muted">对应规范：VXI-11 Rev 1.0；RPC 见 RFC 5531，XDR 见 RFC 4506</p>
+</header>
+
+<!-- ==================================================================== -->
+<section id="intro">
+<h2>1. 概述</h2>
+
+<p>
+<code>go-vxi/vxi11</code> 让 Go 程序通过 LAN 控制支持 VXI-11 的仪器（示波器、信号源、万用表等）。
+整个包只有几千行，自己实现了从 TCP 到 SCPI 的完整链路，没有任何第三方依赖：
+</p>
+
+<pre><code>你的代码
+   │  Query("*IDN?") / Write(...) / ReadAll(...)      ← 本包对外 API
+   ▼
+VXI-11 过程层   create_link / device_write / device_read / ...   (Section C.1)
+   │
+   ▼
+ONC RPC (RFC 5531)   xid、MSG_CALL/MSG_REPLY、AUTH_NULL
+   │
+   ▼
+记录标记 (RFC 5531 §11)   4 字节分片头，最高位 = 最后一片
+   │
+   ▼
+XDR (RFC 4506)   4 字节对齐、长度前缀
+   │
+   ▼
+TCP  +  portmapper(rpcbind) 端口发现 (prog 100000, proc 3 = GETPORT)</code></pre>
+
+<div class="grid2">
+<div>
+<h4>设计要点</h4>
+<ul>
+  <li><b>端口不硬编码</b>：先向 portmapper 查 <code>DEVICE_CORE</code> 的端口，再连过去。</li>
+  <li><b>写自动分片</b>：超过 <code>maxRecvSize</code> 的数据自动切成多次 <code>device_write</code>，只有最后一片带 END。</li>
+  <li><b>读封装成"读到结束"</b>：<code>Query</code>/<code>ReadAll</code> 循环调用 <code>device_read</code> 直到设备指示 END，避免长响应被截断。</li>
+  <li><b>错误可编程判定</b>：设备错误码与本地错误都是可用 <code>errors.Is</code>/<code>errors.As</code> 判定的 Go error。</li>
+  <li><b>可测试</b>：内置一个内存假仪器（mock），无需硬件即可端到端跑通全部流程。</li>
+</ul>
+</div>
+<div>
+<h4>包的构成</h4>
+<table>
+<tr><th>文件</th><th>职责</th></tr>
+<tr><td><code>client.go</code></td><td>对外 API：<code>Client</code>、<code>Dial</code>、各 <code>Option</code></td></tr>
+<tr><td><code>protocol.go</code></td><td>VXI-11 过程号、结构体编解码、<code>Flags</code>、<code>ReadReason</code></td></tr>
+<tr><td><code>rpc.go</code></td><td>ONC RPC over TCP、记录标记、应答解析</td></tr>
+<tr><td><code>xdr.go</code></td><td>XDR 编解码器</td></tr>
+<tr><td><code>intr.go</code></td><td>interrupt channel：客户端侧 DEVICE_INTR 服务端、<code>CreateIntrChan</code>/<code>DestroyIntrChan</code>/<code>OnSRQ</code></td></tr>
+<tr><td><code>errors.go</code></td><td>错误码与哨兵错误</td></tr>
+</table>
+</div>
+</div>
+</section>
+
+<!-- ==================================================================== -->
+<section id="quickstart">
+<h2>2. 快速开始</h2>
+
+<h3 id="install">2.1 引入</h3>
+<p>模块路径为 <code>go-vxi</code>，包路径 <code>go-vxi/vxi11</code>：</p>
+<pre><code>import "go-vxi/vxi11"</code></pre>
+<p class="muted">若放在自己的仓库里，把 <code>go.mod</code> 的 <code>module</code> 改成实际路径即可，包内无相对导入，不会受影响。</p>
+
+<h3 id="minimal">2.2 最小示例</h3>
+<pre><code><span class="k">package</span> main
+
+<span class="k">import</span> (
+	<span class="s">"fmt"</span>
+	<span class="s">"log"</span>
+	<span class="s">"time"</span>
+
+	<span class="s">"go-vxi/vxi11"</span>
+)
+
+<span class="k">func</span> main() {
+	<span class="c">// 1. 连接：portmapper 查端口 -> 建 core channel -> create_link</span>
+	c, err := vxi11.Dial(<span class="s">"5.5.5.1"</span>, <span class="s">"inst0"</span>, 5*time.Second)
+	<span class="k">if</span> err != nil {
+		log.Fatal(err)
+	}
+	<span class="k">defer</span> c.Close() <span class="c">// 发送 destroy_link 并关闭连接</span>
+
+	<span class="c">// 2. 标准 SCPI 查询</span>
+	idn, err := c.Query(<span class="s">"*IDN?"</span>)
+	<span class="k">if</span> err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(idn)
+	<span class="c">// RIGOL TECHNOLOGIES,DS1104Z,DS1ZA212606163,00.04.04.SP4</span>
+
+	<span class="c">// 3. 二进制长响应（IEEE 488.2 定长块，例如屏幕截图）</span>
+	data, err := c.QueryBytes(<span class="s">":DISP:DATA?\n"</span>, 30*time.Second)
+	<span class="k">if</span> err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf(<span class="s">"收到 %d 字节\n"</span>, len(data))
+}</code></pre>
+
+<h3 id="lifecycle">2.3 连接生命周期</h3>
+<pre><code>Dial(host, device, timeout, opts...)
+ ├─ portmapper GETPORT(prog=0x0607AF, vers=1, prot=TCP)   → core 端口
+ ├─ TCP 连接 core 端口
+ ├─ create_link(clientId, lockDevice, lockTimeout, device) → lid / abortPort / maxRecvSize
+ └─ （可选）TCP 连接 abortPort，作为 abort channel
+        │
+        ├── Write / WriteString / Query / QueryBytes / Read / ReadAll
+        ├── Clear / Trigger / Remote / Local / ReadSTB / Docmd
+        ├── Lock / Unlock
+        ├── CreateIntrChan → OnSRQ + EnableSRQ → DestroyIntrChan（interrupt channel）
+        └── Abort（走 abort channel）
+        │
+Close()
+ ├─ destroy_intr_chan（若 interrupt channel 已建立）
+ ├─ destroy_link(lid)
+ └─ 关闭 core / abort / intr 所有连接（幂等）</code></pre>
+
+<div class="note">
+<b>务必 Close</b>
+<code>Client</code> 持有真实的 TCP 连接与设备端的 link 资源。不调用 <code>Close</code> 会在仪器侧留下悬挂的 link，
+仪器通常有 link 数量上限，反复泄漏会让后续连接失败。惯用写法是 <code>defer c.Close()</code>。
+</div>
+</section>
+
+<!-- ==================================================================== -->
+<section id="const">
+<h2>3. 常量</h2>
+
+<table>
+<tr><th>常量</th><th>类型</th><th>值</th><th>含义</th></tr>
+<tr>
+  <td class="sig">DefaultPortmapperPort</td><td>无类型 int</td><td><code>111</code></td>
+  <td>ONC RPC portmapper（rpcbind）的标准端口。可用 <code>WithPortmapperPort</code> 覆盖。</td>
+</tr>
+<tr>
+  <td class="sig">DefaultDevice</td><td>string</td><td><code>"inst0"</code></td>
+  <td>LAN 仪器最常用的 VXI-11 设备名。<code>Dial</code> 的 <code>device</code> 传空串时使用它。<br>
+      <span class="muted">注：规范本身没有规定该字符串，它是 IVI/VISA 生态的约定，实际以仪器为准（有的仪器是 <code>inst1</code>、<code>gpib0,1</code> 等）。</span></td>
+</tr>
+<tr>
+  <td class="sig">DefaultTimeout</td><td>time.Duration</td><td><code>5s</code></td>
+  <td><code>Dial</code> 以及各方法在超时参数 <code>&lt;= 0</code> 时使用的默认 I/O 超时；同时作为 TCP 连接超时。</td>
+</tr>
+<tr>
+  <td class="sig">DefaultMaxResponseBytes</td><td>无类型 int</td><td><code>64 &lt;&lt; 20</code>（64 MiB）</td>
+  <td>一次 <code>Query</code>/<code>QueryBytes</code>/<code>ReadAll</code> 允许累积的最大响应字节数，超出返回 <code>ErrResponseTooLarge</code>。可用 <code>WithMaxResponseBytes</code> 覆盖。</td>
+</tr>
+</table>
+
+<h4>未导出的内部调参常量（不可改动，仅作说明）</h4>
+<table>
+<tr><th>名字</th><th>值</th><th>作用</th></tr>
+<tr><td><code>minWriteChunk</code></td><td>1024</td><td><code>device_write</code> 分片下限。规范保证设备通告的 <code>maxRecvSize</code> 不小于 1024，若设备给出更小的值则以 1024 为准。</td></tr>
+<tr><td><code>maxWriteChunk</code></td><td>1 MiB</td><td>分片上限，防止设备通告一个过大（或异常）的 <code>maxRecvSize</code> 导致单次请求过大。</td></tr>
+<tr><td><code>defaultReadSize</code></td><td>64 KiB</td><td>单次 <code>device_read</code> 的默认 <code>requestSize</code>。规范只限制 <b>写</b> 不超过 <code>maxRecvSize</code>，不限制读请求长度，所以这里直接要 64 KiB 以减少往返。用 <code>WithReadSize</code> 覆盖。</td></tr>
+<tr><td><code>maxReadSizeLimit</code></td><td>1 MiB</td><td>单次 <code>device_read</code> 请求长度的硬上限。</td></tr>
+<tr><td><code>maxRecordBytes</code></td><td>64 MiB</td><td>单条 RPC 消息允许的最大字节数，防御性上限。</td></tr>
+<tr><td><code>maxReadIterations</code></td><td>100000</td><td>一次 <code>ReadAll</code> 最多的 <code>device_read</code> 次数，防止设备行为异常时死循环。</td></tr>
+<tr><td><code>ioTimeoutMarginMin</code></td><td>100ms</td><td rowspan="2">socket 截止时间相对设备侧 <code>io_timeout</code> 的余量参数，见 <a href="#timeout">§7.3</a>。</td></tr>
+<tr><td><code>ioTimeoutMarginMax</code></td><td>1s</td></tr>
+</table>
+</section>
+
+<!-- ==================================================================== -->
+<section id="option">
+<h2>4. 选项 Option</h2>
+
+<p><code>Option</code> 是函数式选项，只在 <code>Dial</code> 时生效，用于定制连接行为：</p>
+<pre><code><span class="k">type</span> Option <span class="k">func</span>(*dialConfig) error</code></pre>
+<p>全部选项都是可选的，不传即使用默认值。选项返回 error 时 <code>Dial</code> 会立即失败（例如端口号越界）。</p>
+
+<div class="api">
+<h3>WithPortmapperPort</h3>
+<span class="sigline">func WithPortmapperPort(port int) Option</span>
+<dl>
+  <dt>参数</dt><dd><code>port</code> — portmapper 端口，合法范围 1..65535，否则 <code>Dial</code> 返回错误。</dd>
+  <dt>默认</dt><dd><code>111</code></dd>
+  <dt>说明</dt><dd>用于非标准 portmapper 端口，或测试环境。正常仪器不需要。</dd>
+</dl>
+</div>
+
+<div class="api">
+<h3>WithCorePort</h3>
+<span class="sigline">func WithCorePort(port int) Option</span>
+<dl>
+  <dt>参数</dt><dd><code>port</code> — <code>DEVICE_CORE</code> 的 TCP 端口，合法范围 1..65535。</dd>
+  <dt>说明</dt><dd>直接连接该端口，<b>跳过 portmapper 查询</b>。<br>
+   规范建议始终通过 portmapper 发现端口，所以此选项只应用于：仪器没有跑 portmapper、或调试时想锁定端口。</dd>
+</dl>
+</div>
+
+<div class="api">
+<h3>WithClientID</h3>
+<span class="sigline">func WithClientID(id int32) Option</span>
+<dl>
+  <dt>参数</dt><dd><code>id</code> — <code>create_link</code> 上报的 <code>clientId</code>，任意 int32。</dd>
+  <dt>默认</dt><dd>随机数（<code>rand.Int31()</code>）</dd>
+  <dt>说明</dt><dd>该值只用于设备端调试追踪，不影响协议行为。多进程共用同一台仪器时给它一个可辨识的值有助排查。</dd>
+</dl>
+</div>
+
+<div class="api">
+<h3>WithLockOnCreate</h3>
+<span class="sigline">func WithLockOnCreate(lock bool, timeout time.Duration) Option</span>
+<dl>
+  <dt>参数</dt><dd><code>lock</code> — 是否在 <code>create_link</code> 时直接请求设备锁；<br>
+      <code>timeout</code> — 等待锁的时长，<code>&lt;= 0</code> 表示不等待（锁被占用即失败）。</dd>
+  <dt>默认</dt><dd><code>false, 0</code>（不锁）</dd>
+  <dt>错误</dt><dd>锁被其它 link 占用且未等待时，<code>Dial</code> 返回 <code>*DeviceError{Op:"create_link", Code:ErrDeviceLocked}</code>，可用
+      <code>errors.Is(err, vxi11.ErrDeviceLocked)</code> 判定。</dd>
+</dl>
+</div>
+
+<div class="api">
+<h3>WithTermChar</h3>
+<span class="sigline">func WithTermChar(ch byte) Option</span>
+<dl>
+  <dt>参数</dt><dd><code>ch</code> — 终止字符。</dd>
+  <dt>默认</dt><dd><code>'\n'</code></dd>
+  <dt>说明</dt><dd><code>Query</code> / <code>QueryWithTimeout</code> 在读取时会置 <code>termchrset</code> 位并使用该字符作为终止符，
+      这样即使设备不发 END 指示也能正常收尾。<br>
+      <code>QueryBytes</code> / <code>Read</code> / <code>ReadAll</code> <b>不</b>使用终止符，因此对二进制数据安全。<br>
+      设为 <code>0</code> 表示连 <code>Query</code> 也不使用终止符，完全依赖设备的 END。</dd>
+</dl>
+</div>
+
+<div class="api">
+<h3>WithReadSize</h3>
+<span class="sigline">func WithReadSize(n uint32) Option</span>
+<dl>
+  <dt>参数</dt><dd><code>n</code> — 单次 <code>device_read</code> 请求的字节数，不能为 0（为 0 时 <code>Dial</code> 报错）。</dd>
+  <dt>默认</dt><dd>64 KiB（<code>defaultReadSize</code>），内部上限 1 MiB。</dd>
+  <dt>说明</dt><dd>设备可以只返回它当前拥有的数据，所以请求大一些不会出错，只会减少往返次数。<br>
+      若某台设备对 <code>requestSize</code> 特别敏感，可以调小。<b>这个值不是 <code>maxRecvSize</code></b>——后者只约束写。</dd>
+</dl>
+</div>
+
+<div class="api">
+<h3>WithMaxResponseBytes</h3>
+<span class="sigline">func WithMaxResponseBytes(n int) Option</span>
+<dl>
+  <dt>参数</dt><dd><code>n</code> — 累积响应字节数上限，必须为正数。</dd>
+  <dt>默认</dt><dd><code>DefaultMaxResponseBytes</code>（64 MiB）</dd>
+  <dt>错误</dt><dd>超出时 <code>Query</code>/<code>ReadAll</code> 返回 <code>ErrResponseTooLarge</code>，同时返回已读到的部分数据。</dd>
+</dl>
+</div>
+
+<div class="api">
+<h3>WithAbortChannel</h3>
+<span class="sigline">func WithAbortChannel(enable bool) Option</span>
+<dl>
+  <dt>参数</dt><dd><code>enable</code> — 是否在 <code>create_link</code> 之后尝试建立 abort channel。</dd>
+  <dt>默认</dt><dd><code>true</code></dd>
+  <dt>说明</dt><dd>abort channel 是可选的，<b>建立失败不影响正常收发</b>，只会让 <code>Abort</code> 返回 <code>ErrNoAbortChannel</code>。
+      设备未通告 <code>abortPort</code> 时也不会建立。</dd>
+</dl>
+</div>
+
+<div class="api">
+<h3>WithDialer</h3>
+<span class="sigline">func WithDialer(d *net.Dialer) Option</span>
+<dl>
+  <dt>参数</dt><dd><code>d</code> — 自定义 <code>*net.Dialer</code>（可配置 <code>LocalAddr</code>、<code>KeepAlive</code> 等），不能为 nil。</dd>
+  <dt>说明</dt><dd>该 dialer 会被浅拷贝后使用；若其 <code>Timeout</code> 为 0，则用 <code>Dial</code> 的 <code>timeout</code> 参数填充。<br>
+      注意 <code>Dialer.Context</code> 不会被本包使用（本包通过 socket 截止时间控制超时）。</dd>
+</dl>
+</div>
+
+<div class="api">
+<h3>WithWriteChunkSize</h3>
+<span class="sigline">func WithWriteChunkSize(n int) Option</span>
+<dl>
+  <dt>参数</dt><dd><code>n</code> — 分片大小：<br>
+      <code>n &gt; 0</code>：每片最多 n 字节，只有最后一片带 END；<br>
+      <code>n == 0</code>：<b>不分片</b>，整条命令用一次 <code>device_write</code> 发出；<br>
+      负数：<code>Dial</code> 报错。</dd>
+  <dt>默认</dt><dd>不调用 = 跟随 <code>create_link</code> 返回的 <code>maxRecvSize</code>（并夹在 1024..1 MiB 之间）。</dd>
+  <dt>说明</dt><dd>规范要求单次 <code>device_write</code> 的数据不超过设备通告的 <code>maxRecvSize</code>，因此默认按它分片。<br>
+      <b>但要注意：</b>实测部分仪器（如 RIGOL DS1000Z 系列）会把每个 <code>device_write</code> 当成一条完整消息解析，
+      这时分片会把一条命令拆成多条错误命令，需要用 <code>0</code> 关闭分片（见 <a href="#realworld">§12</a>）。</dd>
+</dl>
+</div>
+</section>
+
+<!-- ==================================================================== -->
+<section id="client">
+<h2>5. Client 方法</h2>
+
+<p><code>Client</code> 是一条已建立的 VXI-11 link，内部持有 core channel 与可选的 abort channel 两条 TCP 连接。
+所有方法都是并发安全的。</p>
+
+<pre><code><span class="k">type</span> Client <span class="k">struct</span> {
+	<span class="c">// 所有字段均未导出，通过方法访问</span>
+}</code></pre>
+
+<h3 id="m-dial">5.1 建立与关闭</h3>
+
+<div class="api">
+<h3>Dial <span class="badge mvp">MVP</span></h3>
+<span class="sigline">func Dial(host, device string, timeout time.Duration, opts ...Option) (*Client, error)</span>
+<dl>
+  <dt>host</dt><dd>仪器 IP 或主机名，<b>不要带端口</b>（端口由 portmapper 决定）。不能为空。</dd>
+  <dt>device</dt><dd>VXI-11 设备名，通常是 <code>"inst0"</code>；空串表示使用 <code>DefaultDevice</code>。</dd>
+  <dt>timeout</dt><dd>既作 TCP 连接超时，也作 <code>create_link</code> 的 I/O 超时；<code>&lt;= 0</code> 时用 <code>DefaultTimeout</code>。</dd>
+  <dt>返回</dt><dd>新的 <code>*Client</code>；出错时返回 <code>nil</code> 与错误。</dd>
+  <dt>错误</dt><dd>连接失败 → <code>ErrTimeout</code>/<code>ErrTransport</code>；<br>
+      仪器未注册 <code>DEVICE_CORE</code> → <code>ErrPortmapper</code>；<br>
+      设备名不存在 → <code>ErrDeviceNotAccessible</code>（错误码 3）；<br>
+      使用 <code>WithLockOnCreate</code> 且锁被占 → <code>ErrDeviceLocked</code>（错误码 11）。</dd>
+</dl>
+<div class="body">
+<p>执行三步：portmapper 查端口 → 建 core channel → <code>create_link</code>。成功后按需建立 abort channel。
+只要返回的 <code>err == nil</code>，就一定要 <code>Close</code>。</p>
+</div>
+</div>
+
+<div class="api">
+<h3>Close <span class="badge mvp">MVP</span></h3>
+<span class="sigline">func (c *Client) Close() error</span>
+<dl>
+  <dt>返回</dt><dd>首次调用：<code>destroy_link</code> 的错误（如果失败）；重复调用：<code>nil</code>。</dd>
+  <dt>说明</dt><dd>发送 <code>destroy_link</code>，然后关闭 core 与 abort 两条连接。</dd>
+</dl>
+<div class="body">
+<ul>
+  <li><b>幂等</b>：重复调用只返回 <code>nil</code>，可以安全地 <code>defer</code> + 手动各调一次。</li>
+  <li><b>连接一定会被关闭</b>：即使 <code>destroy_link</code> 失败（例如设备已经掉线），两条 TCP 连接也会被释放，
+      不会泄漏 socket 或 goroutine。此时把 <code>destroy_link</code> 的错误返回给调用方记录即可。</li>
+  <li><code>Close</code> 之后所有方法返回 <code>ErrClosed</code>（<code>Close</code> 自身除外）。</li>
+  <li>若 <code>destroy_link</code> 超时，内部使用 <code>DefaultTimeout</code>，不会无限等待。</li>
+</ul>
+</div>
+</div>
+
+<h3 id="m-write">5.2 写入</h3>
+
+<div class="api">
+<h3>Write <span class="badge mvp">MVP</span></h3>
+<span class="sigline">func (c *Client) Write(data []byte, ioTimeout time.Duration) (int, error)</span>
+<dl>
+  <dt>data</dt><dd>要写入的原始字节（SCPI 命令或二进制块）。</dd>
+  <dt>ioTimeout</dt><dd>设备侧 I/O 超时；<code>&lt;= 0</code> 使用客户端默认超时。</dd>
+  <dt>返回</dt><dd><code>n</code> — 设备实际接收的字节数（正常时等于 <code>len(data)</code>）；<br>
+      <code>err</code> — 出错时的错误，此时 <code>n</code> 是已经成功写入的部分字节数。</dd>
+  <dt>错误</dt><dd><code>ErrShortWrite</code>（设备报告写入字节数少于提交量）；<br>
+      <code>*DeviceError</code>（错误码 5 参数错误、11 设备被锁等）；<br>
+      <code>ErrTimeout</code>/<code>ErrTransport</code>/<code>ErrConnBroken</code>。</dd>
+</dl>
+<div class="body">
+<p>若 <code>len(data)</code> 超过设备通告的 <code>maxRecvSize</code>，会自动分片发送，<b>只有最后一片带 END 标志</b>
+（规范 Section C.1：<code>end</code> 表示"本条消息的最后一个字节"）。分片大小见 <code>WithWriteChunkSize</code>。</p>
+<pre><code>n, err := c.Write([]byte(<span class="s">"*CLS\n"</span>), 0)
+<span class="k">if</span> err != nil { log.Fatal(err) }
+fmt.Println(n)  <span class="c">// 5</span></code></pre>
+</div>
+</div>
+
+<div class="api">
+<h3>WriteString <span class="badge mvp">MVP</span></h3>
+<span class="sigline">func (c *Client) WriteString(cmd string) error</span>
+<dl>
+  <dt>cmd</dt><dd>SCPI 命令文本。</dd>
+  <dt>返回</dt><dd>仅 <code>error</code>。</dd>
+  <dt>说明</dt><dd>若 <code>cmd</code> 未以 <code>"\n"</code> 结尾会自动补上（已结尾则不会重复添加）。使用默认超时。</dd>
+</dl>
+</div>
+
+<h3 id="m-read">5.3 读取</h3>
+
+<div class="api">
+<h3>Read</h3>
+<span class="sigline">func (c *Client) Read(maxLen int, ioTimeout time.Duration) ([]byte, error)</span>
+<dl>
+  <dt>maxLen</dt><dd>本次最多读取的字节数；<code>&lt;= 0</code> 表示使用默认请求长度（见 <code>WithReadSize</code>）。</dd>
+  <dt>返回</dt><dd>本次 <code>device_read</code> 拿到的数据。</dd>
+  <dt>说明</dt><dd><b>只执行一次</b> <code>device_read</code>，不设置终止符（二进制安全）。<br>
+      返回的数据量可能小于请求量——设备返回多少就是多少。</dd>
+</dl>
+<div class="warn">
+<b>不要用 Read 读长响应</b>
+一次 <code>Read</code> 对应一次 RPC。<code>:DISP:DATA?</code> 这类上百 KB 的响应需要反复读，
+用 <code>ReadAll</code> 或 <code>QueryBytes</code> 才会自动读到结束。
+</div>
+</div>
+
+<div class="api">
+<h3>ReadWithReason</h3>
+<span class="sigline">func (c *Client) ReadWithReason(maxLen int, ioTimeout time.Duration) ([]byte, ReadReason, error)</span>
+<dl>
+  <dt>返回</dt><dd>除数据外还返回设备给出的 <code>reason</code> 位（<code>ReasonReqCnt</code>/<code>ReasonChr</code>/<code>ReasonEnd</code>，见 <a href="#reason">§8.3</a>）。</dd>
+  <dt>说明</dt><dd>需要自己实现读取循环时用这个，可以精确判断"缓冲区读满"与"消息结束"的区别。</dd>
+</dl>
+</div>
+
+<div class="api">
+<h3>ReadAll <span class="badge mvp">MVP</span></h3>
+<span class="sigline">func (c *Client) ReadAll(maxLen int, ioTimeout time.Duration) ([]byte, error)</span>
+<dl>
+  <dt>maxLen</dt><dd>累积读取的上限；<code>&lt;= 0</code> 表示只用客户端的 <code>maxResponse</code> 上限。</dd>
+  <dt>返回</dt><dd>多次 <code>device_read</code> 拼接后的完整数据。出错时返回的 <code>data</code> 可能包含已成功读取的部分数据。</dd>
+  <dt>错误</dt><dd><code>ErrResponseTooLarge</code>（达到上限）；<code>ErrProtocol</code>（连续太多次仍未读到结束标志）。</dd>
+</dl>
+<div class="body">
+<p>反复调用 <code>device_read</code> 直到满足结束条件之一：</p>
+<ul>
+  <li>设备返回 <code>reason</code> 含 <b>END</b>（消息结束）或 <b>CHR</b>（命中终止符）；</li>
+  <li>本次读到 <b>空数据</b>（设备没有更多内容了）；</li>
+  <li>累积字节数达到上限。</li>
+</ul>
+<p>不设置终止符，二进制安全。这是处理长响应的正确方式。</p>
+</div>
+</div>
+
+<h3 id="m-query">5.4 查询</h3>
+
+<div class="api">
+<h3>Query <span class="badge mvp">MVP</span></h3>
+<span class="sigline">func (c *Client) Query(cmd string) (string, error)</span>
+<dl>
+  <dt>cmd</dt><dd>SCPI 查询命令，如 <code>"*IDN?"</code>。未以 <code>"\n"</code> 结尾会被自动补上。</dd>
+  <dt>返回</dt><dd>应答文本，<b>已去掉结尾的 CR/LF</b>。</dd>
+  <dt>说明</dt><dd>等价于 <code>Write(cmd)</code> + <code>ReadAll</code>，两步在同一个锁内完成，
+      因此并发调用时各 goroutine 拿到的是自己那次查询的应答。</dd>
+  <dt>注意</dt><dd>读取时启用终止符 <code>'\n'</code>，返回 <code>string</code>。<b>二进制数据请用 <code>QueryBytes</code></b>。</dd>
+</dl>
+<pre><code>idn, err := c.Query(<span class="s">"*IDN?"</span>)
+freq, err := c.Query(<span class="s">":CHAN1:SCAL?"</span>)</code></pre>
+</div>
+
+<div class="api">
+<h3>QueryWithTimeout</h3>
+<span class="sigline">func (c *Client) QueryWithTimeout(cmd string, ioTimeout time.Duration) (string, error)</span>
+<dl>
+  <dt>说明</dt><dd>与 <code>Query</code> 相同，但可以指定 I/O 超时。<br>
+      用于耗时较长的查询，例如 <code>:DISP:DATA?</code> 之前的 <code>MEAS:...</code> 类操作。</dd>
+</dl>
+</div>
+
+<div class="api">
+<h3>QueryBytes <span class="badge mvp">MVP</span></h3>
+<span class="sigline">func (c *Client) QueryBytes(cmd string, ioTimeout time.Duration) ([]byte, error)</span>
+<dl>
+  <dt>cmd</dt><dd>命令，<b>会被原样发送</b>（不自动补 <code>'\n'</code>，需要时自行拼上）。</dd>
+  <dt>返回</dt><dd>原始应答字节，不做任何裁剪。</dd>
+  <dt>说明</dt><dd>与 <code>Query</code> 的唯一区别是不设置终止符、返回字节切片，
+      适用于 <code>:DISPLAY:DATA?</code> 这类 IEEE 488.2 定长块应答。</dd>
+</dl>
+<pre><code>data, err := c.QueryBytes(<span class="s">":DISP:DATA?\n"</span>, 30*time.Second)
+<span class="c">// data 形如  #9001152054&lt;1152054 字节的位图&gt;</span></code></pre>
+</div>
+
+<h3 id="m-generic">5.5 通用操作</h3>
+
+<p>以下方法都是"无返回数据、只有错误码"的 VXI-11 过程，成功返回 <code>nil</code>，失败返回 <code>*DeviceError</code>。
+都使用客户端默认超时。</p>
+
+<table>
+<tr><th>方法</th><th>对应过程</th><th>作用</th></tr>
+<tr><td class="sig">Clear() error</td><td><code>device_clear</code> (15)</td>
+    <td>清空设备的输入/输出缓冲并复位待处理的操作。<span class="badge mvp">MVP</span></td></tr>
+<tr><td class="sig">Trigger() error</td><td><code>device_trigger</code> (14)</td>
+    <td>触发一次设备操作，等价于 SCPI 的 <code>*TRG</code>。</td></tr>
+<tr><td class="sig">Remote() error</td><td><code>device_remote</code> (16)</td>
+    <td>让设备进入远程控制状态。</td></tr>
+<tr><td class="sig">Local() error</td><td><code>device_local</code> (17)</td>
+    <td>让设备回到本地控制状态，与 <code>Remote</code> 相反。</td></tr>
+<tr><td class="sig">ReadSTB() (byte, error)</td><td><code>device_readstb</code> (13)</td>
+    <td>读取状态字节（Status Byte），等价于 SCPI 的 <code>*STB?</code>。<br>
+        <span class="muted">实测 RIGOL DS1000Z 返回错误码 8（不支持），改用 <code>Query("*STB?")</code>。</span></td></tr>
+<tr><td class="sig">EnableSRQ(enable bool, handle []byte) error</td><td><code>device_enable_srq</code> (20)</td>
+    <td>启用/禁用 SRQ 中断上报。<code>handle</code> 是中断通道句柄，最大 40 字节，超出直接返回本地错误。<br>
+        要真正收到 SRQ 通知，需先调用 <code>CreateIntrChan</code> 建立 interrupt channel。</td></tr>
+<tr><td class="sig">Docmd(cmd int32, networkOrder bool, datasize int32, data []byte, ioTimeout time.Duration) ([]byte, error)</td><td><code>device_docmd</code> (22)</td>
+    <td>执行设备相关命令。<code>cmd</code> 取值由厂商定义；<code>networkOrder</code> 表示本机是否大端
+        （x86/ARM 常见系统传 <code>false</code>）；<code>datasize</code> 是 <code>data</code> 中单个元素的字节数
+        （1 = 不透明字节流）。返回设备的 <code>data_out</code>。<br>
+        <span class="muted">设备不支持该 cmd 时返回错误码 8。典型用途是 GPIB 网关控制，LAN 示波器一般返回错误码 8。</span></td></tr>
+<tr><td class="sig">CreateIntrChan() error</td><td><code>create_intr_chan</code> (25)</td>
+    <td>在本机随机端口启动 DEVICE_INTR 服务端（IPv4/TCP），并把地址通过 <code>create_intr_chan</code> 告知设备；
+        重复调用幂等。设备不支持时返回错误码 8/6。建立后用 <code>OnSRQ</code> + <code>EnableSRQ</code> 接收 SRQ。</td></tr>
+<tr><td class="sig">DestroyIntrChan() error</td><td><code>destroy_intr_chan</code> (26)</td>
+    <td>让设备关闭 interrupt channel 并停止本机服务端；幂等。<code>Close</code> 会自动调用。</td></tr>
+<tr><td class="sig">OnSRQ(h func(handle []byte))</td><td><code>device_intr_srq</code> (30, 设备→客户端)</td>
+    <td>设置 SRQ 回调；<code>handle</code> 即 <code>EnableSRQ</code> 登记的内容。传 <code>nil</code> 取消。
+        回调在服务端 goroutine 里执行，应尽快返回。</td></tr>
+</table>
+
+<h3 id="m-lock">5.6 锁</h3>
+
+<div class="api">
+<h3>Lock <span class="badge mvp">MVP</span></h3>
+<span class="sigline">func (c *Client) Lock(timeout time.Duration) error</span>
+<dl>
+  <dt>timeout</dt><dd><code>&gt; 0</code>：置 <code>waitlock</code> 位并等待最多该时长（毫秒精度）；<br>
+      <code>&lt;= 0</code>：不等待，锁被占用立刻返回错误码 11。</dd>
+  <dt>错误</dt><dd>锁被其它 link 持有 → <code>errors.Is(err, vxi11.ErrDeviceLocked)</code>。</dd>
+  <dt>说明</dt><dd>自动把 socket 截止时间放宽 <code>timeout</code>，否则等锁会先撞上 I/O 超时。</dd>
+</dl>
+</div>
+
+<div class="api">
+<h3>Unlock <span class="badge mvp">MVP</span></h3>
+<span class="sigline">func (c *Client) Unlock() error</span>
+<dl>
+  <dt>错误</dt><dd>本 link 未持锁 → 错误码 12 <code>ErrNoLockHeld</code>。</dd>
+</dl>
+<p class="muted">锁是 link 级别的：link 被销毁（<code>Close</code>）时设备会释放它持有的锁。</p>
+</div>
+
+<h3 id="m-abort">5.7 abort channel</h3>
+
+<div class="api">
+<h3>Abort</h3>
+<span class="sigline">func (c *Client) Abort() error</span>
+<dl>
+  <dt>返回</dt><dd>成功 <code>nil</code>；设备不支持该过程时 <code>ErrOperationNotSupported</code>（错误码 8）。</dd>
+  <dt>错误</dt><dd>设备未提供 <code>abortPort</code> → <code>ErrNoAbortChannel</code>。</dd>
+  <dt>说明</dt><dd>通过 abort channel 发送 <code>device_abort</code>，中断当前 link 上正在进行的操作。<br>
+      <b>它使用独立的连接与独立的锁</b>，所以可以（也应该）在另一个 goroutine 正在 <code>Read</code>/<code>Query</code> 时调用。</dd>
+</dl>
+<pre><code><span class="c">// 给长查询加一个超时中断</span>
+timer := time.AfterFunc(10*time.Second, <span class="k">func</span>() { c.Abort() })
+<span class="k">defer</span> timer.Stop()
+data, err := c.QueryBytes(<span class="s">":DISP:DATA?\n"</span>, 30*time.Second)</code></pre>
+</div>
+
+<h3 id="m-getter">5.8 属性读取</h3>
+
+<p>这些 getter 返回建链时确定下来的参数，全部无副作用、无需加锁、可在任何时候调用。</p>
+
+<table>
+<tr><th>方法</th><th>返回类型</th><th>含义</th></tr>
+<tr><td class="sig">Host()</td><td>string</td><td>连接的主机名/IP（不含端口）。</td></tr>
+<tr><td class="sig">Device()</td><td>string</td><td><code>create_link</code> 时使用的设备名。</td></tr>
+<tr><td class="sig">Port()</td><td>int</td><td><code>DEVICE_CORE</code> 所在的 TCP 端口（实测 RIGOL DS1104Z 为 618）。</td></tr>
+<tr><td class="sig">LinkID()</td><td>int32</td><td><code>create_link</code> 分配到的 Link ID（<code>lid</code>），后续所有过程都要带上它。</td></tr>
+<tr><td class="sig">AbortPort()</td><td>uint16</td><td>设备通告的 abort channel 端口；<code>0</code> 表示设备不提供。</td></tr>
+<tr><td class="sig">MaxRecvSize()</td><td>uint32</td><td>设备通告的单次 <code>device_write</code> 最大字节数（实测 RIGOL DS1104Z 为 1500）。</td></tr>
+<tr><td class="sig">Timeout()</td><td>time.Duration</td><td>客户端的默认 I/O 超时。</td></tr>
+<tr><td class="sig">String()</td><td>string</td><td>便于日志的输出，形如 <code>vxi11.Client{host=5.5.5.1 device=inst0 lid=0 maxRecvSize=1500}</code>。</td></tr>
+</table>
+</section>
+
+<!-- ==================================================================== -->
+<section id="errors">
+<h2>6. 错误处理</h2>
+
+<p>本包的错误分两类，两者都支持 <code>errors.Is</code> / <code>errors.As</code>：</p>
+<ul>
+  <li><b>设备错误码</b>：仪器在响应报文的 <code>error</code> 字段里返回的 VXI-11 错误码（规范 Table B.2）。</li>
+  <li><b>本地错误</b>：传输层 / XDR 层 / 客户端自身产生的哨兵错误，不会出现在报文里。</li>
+</ul>
+
+<h3 id="errcode">6.1 设备错误码 <code>ErrorCode</code></h3>
+
+<pre><code><span class="k">type</span> ErrorCode int32
+
+<span class="k">func</span> (c ErrorCode) Error() string   <span class="c">// "device error 11 (device locked by another link)"</span>
+<span class="k">func</span> (c ErrorCode) String() string  <span class="c">// "device locked by another link"</span>
+<span class="k">func</span> (c ErrorCode) AsError() error  <span class="c">// 0 -> nil，其余返回自身</span></code></pre>
+
+<table>
+<tr><th>常量</th><th>码</th><th>规范名称</th><th>常见成因</th></tr>
+<tr><td class="sig">ErrNoError</td><td>0</td><td>no error</td><td>成功。<code>deviceErr</code> 会把它转成 <code>nil</code>。</td></tr>
+<tr><td class="sig">ErrSyntax</td><td>1</td><td>syntax error</td><td>请求报文语法错误（通常说明客户端有 bug）。</td></tr>
+<tr><td class="sig">ErrDeviceNotAccessible</td><td>3</td><td>device not accessible</td><td><code>create_link</code> 的设备名不存在，如把 <code>inst0</code> 写成 <code>inst9</code>。</td></tr>
+<tr><td class="sig">ErrInvalidLinkID</td><td>4</td><td>invalid link identifier</td><td><code>lid</code> 无效（link 已被销毁，或用了别的连接的 lid）。</td></tr>
+<tr><td class="sig">ErrParameter</td><td>5</td><td>parameter error</td><td>参数越界。<b>实测 RIGOL 对超过 <code>maxRecvSize</code> 的单次 <code>device_write</code> 返回此码。</b></td></tr>
+<tr><td class="sig">ErrChannelNotEstablished</td><td>6</td><td>channel not established</td><td>通道未建立。</td></tr>
+<tr><td class="sig">ErrOperationNotSupported</td><td>8</td><td>operation not supported</td><td>仪器不支持该过程。<b>实测 RIGOL 对 <code>device_readstb</code> 与 <code>device_abort</code> 返回此码。</b></td></tr>
+<tr><td class="sig">ErrOutOfResources</td><td>9</td><td>out of resources</td><td>设备资源耗尽（link 数量达上限等）。</td></tr>
+<tr><td class="sig">ErrDeviceLocked</td><td>11</td><td>device locked by another link</td><td>锁被其它 link 持有，且未置 <code>waitlock</code>。</td></tr>
+<tr><td class="sig">ErrNoLockHeld</td><td>12</td><td>no lock held by this link</td><td>本 link 未持锁就调用 <code>Unlock</code>。</td></tr>
+<tr><td class="sig">ErrIOTimeout</td><td>15</td><td>I/O timeout</td><td><b>设备侧</b>超时。与本地 <code>ErrTimeout</code> 区分。</td></tr>
+<tr><td class="sig">ErrIOError</td><td>17</td><td>I/O error</td><td>设备 I/O 层错误。</td></tr>
+<tr><td class="sig">ErrInvalidAddress</td><td>21</td><td>invalid address</td><td>地址非法。</td></tr>
+<tr><td class="sig">ErrAbort</td><td>23</td><td>abort</td><td>操作被 <code>device_abort</code> 中断。收到它说明这是一次被主动取消的操作。</td></tr>
+<tr><td class="sig">ErrChannelEstablished</td><td>29</td><td>channel already established</td><td>通道已建立（重复建立）。</td></tr>
+</table>
+
+<h3 id="localerr">6.2 本地错误（哨兵变量）</h3>
+
+<table>
+<tr><th>变量</th><th>含义</th><th>调用方应该怎么办</th></tr>
+<tr><td class="sig">ErrTransport</td><td>TCP 传输层错误（连接被重置、写入失败等）。</td><td>重新 <code>Dial</code>。</td></tr>
+<tr><td class="sig">ErrTimeout</td><td>网络层超时（socket 读写截止时间到）。</td><td>看情况：加大超时重试，或确认仪器是否死机。<br><span class="muted">注意与设备返回的码 15 区分，后者说明是设备自己超时。</span></td></tr>
+<tr><td class="sig">ErrConnClosed</td><td>对端关闭了连接。</td><td>重新 <code>Dial</code>。</td></tr>
+<tr><td class="sig">ErrConnBroken</td><td>该 RPC 通道已不可用（曾发生过传输层错误）。<br><b>出现后所有后续调用都会返回它，连接被"熔断"。</b></td><td>必须重新 <code>Dial</code>，重试没有意义。</td></tr>
+<tr><td class="sig">ErrProtocol</td><td>RPC/XDR 报文格式错误（<code>xid</code> 不匹配、报文过短、<code>ReadAll</code> 循环次数超限等）。</td><td>通常是设备实现不规范或客户端 bug，报 bug 时请附上错误信息。</td></tr>
+<tr><td class="sig">ErrProgramUnavailable</td><td>服务端未注册该 RPC 程序。</td><td>确认仪器是否真的支持 VXI-11。</td></tr>
+<tr><td class="sig">ErrProgramMismatch</td><td>服务端不支持请求的程序版本。</td><td>仪器固件版本问题。</td></tr>
+<tr><td class="sig">ErrProcedureUnavailable</td><td>服务端不支持该 RPC 过程。</td><td>该功能不可用，降级处理。</td></tr>
+<tr><td class="sig">ErrGarbageArgs</td><td>服务端无法解析参数。</td><td>客户端 bug 或设备实现不规范。</td></tr>
+<tr><td class="sig">ErrSystemError</td><td>服务端内部错误。</td><td>重试或重启仪器。</td></tr>
+<tr><td class="sig">ErrRPCMismatch</td><td>RPC 版本协商失败。</td><td>对端不是标准 ONC RPC 服务。</td></tr>
+<tr><td class="sig">ErrAuthError</td><td>RPC 认证被拒绝。</td><td>本包使用 AUTH_NULL，正常不会出现。</td></tr>
+<tr><td class="sig">ErrPortmapper</td><td>通过 portmapper 查询 <code>DEVICE_CORE</code> 端口失败（未注册等）。</td><td>确认 IP 正确、仪器已开机并启用了 VXI-11；可尝试 <code>WithCorePort</code> 手动指定端口。</td></tr>
+<tr><td class="sig">ErrResponseTooLarge</td><td>响应超过 <code>WithMaxResponseBytes</code> 或调用方给出的长度上限。</td><td>加大上限，或分批读取。</td></tr>
+<tr><td class="sig">ErrShortWrite</td><td>设备报告的写入字节数少于本包提交的字节数。</td><td>设备实现问题；已写入的字节数是可信的。</td></tr>
+<tr><td class="sig">ErrClosed</td><td><code>Client</code> 已经 <code>Close</code>。</td><td>不要再使用该 Client。</td></tr>
+<tr><td class="sig">ErrNoAbortChannel</td><td>设备没有提供 abort 端口，无法执行 <code>Abort</code>。</td><td>改用普通 I/O 超时控制。</td></tr>
+<tr><td class="sig">ErrNotImplemented</td><td>本包尚未实现某个功能。<b>保留</b>：早期版本中 <code>device_docmd</code> / interrupt channel 返回它，现均已实现，目前没有导出函数再返回该错误。</td><td>正常不会再遇到。</td></tr>
+</table>
+
+<h4>辅助函数</h4>
+<table>
+<tr><th>函数</th><th>说明</th></tr>
+<tr><td class="sig">func IsTimeout(err error) bool</td>
+    <td>判断是否属于超时：<b>既是</b>网络层超时 <code>ErrTimeout</code>，<b>也包括</b>设备返回的错误码 15 <code>ErrIOTimeout</code>。</td></tr>
+<tr><td class="sig">func IsDeviceLocked(err error) bool</td>
+    <td>判断是否为"设备被其它 link 锁定"（错误码 11）。等价于 <code>errors.Is(err, ErrDeviceLocked)</code>。</td></tr>
+<tr><td class="sig">func AsDeviceError(err error) (*DeviceError, bool)</td>
+    <td>提取错误里的 <code>*DeviceError</code>，拿不到时返回 <code>(nil, false)</code>。</td></tr>
+</table>
+
+<h4>DeviceError — 带上下文的设备错误</h4>
+<pre><code><span class="k">type</span> DeviceError <span class="k">struct</span> {
+	Op   string    <span class="c">// 触发错误的 RPC 过程名，如 "device_write"</span>
+	Code ErrorCode <span class="c">// 设备返回的错误码</span>
+}
+
+<span class="k">func</span> (e *DeviceError) Error() string   <span class="c">// "device_write: device error 5 (parameter error)"</span>
+<span class="k">func</span> (e *DeviceError) Unwrap() error  <span class="c">// 返回 e.Code，因此 errors.Is(err, ErrDeviceLocked) 成立</span></code></pre>
+<p>它是唯一携带"哪个过程失败"信息的错误类型。<code>Unwrap</code> 返回内部的 <code>ErrorCode</code>，
+所以既能用 <code>errors.Is</code> 按错误码判定，也能用 <code>errors.As</code> 取出过程名做日志。</p>
+
+<h3 id="errusage">6.3 判定范式</h3>
+
+<pre><code><span class="k">import</span> (
+	<span class="s">"errors"</span>
+	<span class="s">"log"</span>
+
+	<span class="s">"go-vxi/vxi11"</span>
+)
+
+_, err := c.Query(<span class="s">":FOO:BAR?"</span>)
+<span class="k">switch</span> {
+<span class="k">case</span> err == nil:
+	<span class="c">// 正常</span>
+
+<span class="k">case</span> errors.Is(err, vxi11.ErrDeviceLocked):
+	<span class="c">// 错误码 11：别的 link 占了锁。等一下或放弃。</span>
+	log.Println(<span class="s">"设备被占用"</span>)
+
+<span class="k">case</span> vxi11.IsTimeout(err):
+	<span class="c">// 网络层超时 或 设备返回错误码 15</span>
+	log.Println(<span class="s">"超时"</span>)
+
+<span class="k">case</span> errors.Is(err, vxi11.ErrConnBroken):
+	<span class="c">// 连接已熔断，必须重新 Dial</span>
+	log.Println(<span class="s">"连接失效，需要重连"</span>)
+
+<span class="k">case</span> errors.Is(err, vxi11.ErrOperationNotSupported):
+	<span class="c">// 仪器不支持该操作，降级处理</span>
+
+<span class="k">default</span>:
+	<span class="c">// 取出过程名与错误码，写日志</span>
+	<span class="k">var</span> de *vxi11.DeviceError
+	<span class="k">if</span> errors.As(err, &amp;de) {
+		log.Printf(<span class="s">"设备错误: op=%s code=%d (%s)"</span>, de.Op, int32(de.Code), de.Code)
+	} <span class="k">else</span> {
+		log.Printf(<span class="s">"错误: %v"</span>, err)
+	}
+}</code></pre>
+
+<div class="ok">
+<b>好消息：设备错误不会污染连接</b>
+设备返回错误码只说明<b>本次操作</b>失败，TCP 连接与 link 都还是好的，可以继续用（例如 <code>:SYST:ERR?</code> 查错后再重试）。
+只有传输层错误（<code>ErrConnBroken</code> 等）才需要重新 <code>Dial</code>。
+</div>
+</section>
+
+<!-- ==================================================================== -->
+<section id="semantics">
+<h2>7. 关键语义</h2>
+
+<h3 id="frag">7.1 写入分片</h3>
+
+<p>规范规定单次 <code>device_write</code> 的数据不得超过设备在 <code>create_link</code> 响应里通告的 <code>maxRecvSize</code>
+（规范保证它至少为 1024）。本包默认行为：</p>
+
+<pre><code>Write(data)  ──►  按 chunk 切分，逐片 device_write
+                  chunk = maxRecvSize（夹在 1024 .. 1 MiB 之间）
+
+  片 1        flags = 0        （无 END）
+  片 2        flags = 0
+  片 3        flags = FlagEnd  （只有最后一片带 END）</code></pre>
+
+<p><code>end</code> 标志的含义是"本条消息的最后一个字节"，所以只有最后一片能带它。
+若中途某片出错，<code>Write</code> 返回已经写入的字节数与错误，此时设备侧收到的是一条不完整的消息。</p>
+
+<div class="danger">
+<b>有些仪器把每个 device_write 当成一条完整消息</b>
+这类仪器（实测 RIGOL DS1000Z 系列即如此）在收到分片时会逐片解析，导致一条命令被拆成若干条错误命令。
+对它们必须用 <code>WithWriteChunkSize(0)</code> 关闭分片。<br>
+判断方法：分片写入后查 <code>:SYST:ERR?</code>，若出现 <code>-101,"Invalid character"</code> 之类的语法错误，
+而同样的命令不分片就正常，那就是这个原因。
+</div>
+
+<h3 id="longread">7.2 长响应拼接</h3>
+
+<p>规范 OBSERVATION B.6.9 明确指出：一次 <code>device_read</code> 可能返回了数据，但 <code>reason</code> 全为 0——
+设备内部缓冲满了，它先把这些给你。此时<b>必须继续读</b>，否则长回复会被截断。</p>
+
+<pre><code>ReadAll / Query 的循环：
+
+  ┌─► device_read(requestSize)
+  │      │
+  │      ├─ 返回数据为空 ────────────────► 结束（设备没更多了）
+  │      ├─ reason 含 END 或 CHR ───────► 结束（消息完整）
+  │      ├─ 累积长度 >= 上限 ───────────► ErrResponseTooLarge
+  │      └─ reason == 0 或只有 REQCNT ──┐
+  └──────────────────────────────────────┘  继续读</code></pre>
+
+<p>实测 RIGOL DS1104Z 读 1,152,066 字节的 <code>:DISP:DATA?</code> 屏幕数据，需要约 18 次
+<code>device_read</code> 才能拼完，只有循环读才能拿到完整的 IEEE 488.2 定长块。</p>
+
+<h3 id="timeout">7.3 超时模型</h3>
+
+<p>一次调用涉及两个超时，本包分别设置：</p>
+
+<table>
+<tr><th>层</th><th>值</th><th>作用</th></tr>
+<tr><td>设备侧 <code>io_timeout</code></td><td>调用方给的 <code>ioTimeout</code>（毫秒精度写入报文）</td>
+    <td>告诉<b>仪器</b>：这次操作最多等多久，超时请返回错误码 15。</td></tr>
+<tr><td>socket 截止时间</td><td><code>socketTimeout(ioTimeout)</code></td>
+    <td>告诉<b>本机 TCP 栈</b>：多久没数据就报错。</td></tr>
+</table>
+
+<pre><code><span class="k">func</span> socketTimeout(d time.Duration) time.Duration {
+	<span class="k">if</span> d &lt;= 0 { <span class="k">return</span> 0 }          <span class="c">// 0 = 不设截止时间</span>
+	margin := d/2 + 100*time.Millisecond
+	<span class="k">if</span> margin &gt; time.Second { margin = time.Second }
+	<span class="k">return</span> d + margin
+}</code></pre>
+
+<p>socket 超时<b>故意比设备侧超时长一点</b>，这样设备有机会用自己的逻辑返回错误码 15（一条干净的协议应答），
+而不是被客户端直接掐断连接、把 TCP 字节流搞乱。余量取 <code>d/2 + 100ms</code>，上限 1 秒，
+使短超时也能被如实反映出来（例如 200ms 的超时不会变成 1.2 秒）。</p>
+
+<p>因此一次超时可能表现为两种错误：</p>
+<ul>
+  <li>设备先超时 → <code>ErrIOTimeout</code>（错误码 15），连接<b>保持完好</b>；</li>
+  <li>网络先断 → <code>ErrTimeout</code>（本地），该通道被标记为 <code>ErrConnBroken</code>。</li>
+</ul>
+<p>用 <code>vxi11.IsTimeout(err)</code> 可以同时捕获这两种情况。</p>
+
+<h3 id="concurrency">7.4 并发</h3>
+
+<ul>
+  <li><code>Client</code> 的所有方法都是并发安全的。</li>
+  <li>对 <b>core channel</b> 的调用被一把互斥锁串行化；<code>Query</code> 的 write + read 在<b>同一个锁内</b>完成，
+      所以多个 goroutine 并发 <code>Query</code> 不会串台——各自拿到自己那次查询的应答。</li>
+  <li><code>Abort</code> 使用<b>独立的连接和独立的锁</b>，因此不会被正在进行的长时间读写阻塞，
+      这正是 abort channel 存在的意义。</li>
+  <li>getter（<code>Port()</code>、<code>LinkID()</code> 等）读取的是建链后不再变化的字段，无需加锁。</li>
+  <li>VXI-11 是请求-应答协议，同一 link 上不能流水线发包，所以串行化不会带来额外损失。</li>
+</ul>
+
+<div class="warn">
+<b>一个 link = 一个逻辑会话</b>
+同一台仪器可以被多个进程/多个 link 同时连接，但它们共享仪器的输出缓冲。
+若需要保证一段操作序列不被打断，用 <code>Lock</code> / <code>Unlock</code> 显式加锁。
+</div>
+
+<h3 id="rrc">7.5 调用与过程对应表</h3>
+
+<table>
+<tr><th>API</th><th>VXI-11 过程</th><th>proc 号</th><th>通道</th><th>状态</th></tr>
+<tr><td><code>Dial</code></td><td><code>create_link</code></td><td>10</td><td>core</td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>Write</code> / <code>WriteString</code> / <code>Query*</code></td><td><code>device_write</code></td><td>11</td><td>core</td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>Read</code> / <code>ReadAll</code> / <code>Query*</code></td><td><code>device_read</code></td><td>12</td><td>core</td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>ReadSTB</code></td><td><code>device_readstb</code></td><td>13</td><td>core</td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>Trigger</code></td><td><code>device_trigger</code></td><td>14</td><td>core</td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>Clear</code></td><td><code>device_clear</code></td><td>15</td><td>core</td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>Remote</code></td><td><code>device_remote</code></td><td>16</td><td>core</td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>Local</code></td><td><code>device_local</code></td><td>17</td><td>core</td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>Lock</code></td><td><code>device_lock</code></td><td>18</td><td>core</td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>Unlock</code></td><td><code>device_unlock</code></td><td>19</td><td>core</td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>EnableSRQ</code></td><td><code>device_enable_srq</code></td><td>20</td><td>core</td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>Docmd</code></td><td><code>device_docmd</code></td><td>22</td><td>core</td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>Close</code></td><td><code>destroy_link</code></td><td>23</td><td>core</td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>CreateIntrChan</code></td><td><code>create_intr_chan</code></td><td>25</td><td>core</td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>DestroyIntrChan</code></td><td><code>destroy_intr_chan</code></td><td>26</td><td>core</td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>Abort</code></td><td><code>device_abort</code></td><td>1</td><td><b>async</b></td><td><span class="badge mvp">已实现</span></td></tr>
+<tr><td><code>OnSRQ</code>（回调）</td><td><code>device_intr_srq</code></td><td>30</td><td><b>intr</b>（设备→客户端）</td><td><span class="badge mvp">已实现</span></td></tr>
+</table>
+<p class="muted">proc 21 / 24 在规范的过程表里没有定义，本包也未使用。至此规范全部 14 个过程均已实现。</p>
+</section>
+
+<!-- ==================================================================== -->
+<section id="proto">
+<h2>8. 协议参考</h2>
+
+<h3 id="protoconst">8.1 程序号与版本</h3>
+
+<table>
+<tr><th>程序</th><th>程序号</th><th>版本</th><th>用途</th></tr>
+<tr><td><code>DEVICE_CORE</code></td><td><code>0x0607AF</code></td><td>1</td>
+    <td>主通道：建链、读写、锁、清设备等。</td></tr>
+<tr><td><code>DEVICE_ASYNC</code></td><td><code>0x0607B0</code></td><td>1</td>
+    <td>abort channel：中断正在进行的操作。</td></tr>
+<tr><td><code>DEVICE_INTR</code></td><td><code>0x0607B1</code></td><td>1</td>
+    <td>interrupt channel：SRQ 上报。方向相反——客户端是 RPC 服务端（本包在 <code>intr.go</code> 实现），设备是 RPC 客户端。</td></tr>
+<tr><td><code>PORTMAP</code></td><td><code>100000</code></td><td>2</td>
+    <td>端口发现，只用 proc 3 = <code>GETPORT</code>，参数 <code>{prog, vers, prot, port}</code>，
+        <code>prot = IPPROTO_TCP = 6</code>，<code>port</code> 字段不使用（填 0）。</td></tr>
+</table>
+
+<h3 id="flags">8.2 标志位 <code>Flags</code></h3>
+
+<pre><code><span class="k">type</span> Flags uint32
+
+<span class="k">const</span> (
+	FlagWaitLock   Flags = 1 &lt;&lt; 0  <span class="c">// bit0 waitlock   : device_lock 时锁被占则等待而非报错 11</span>
+	FlagEnd        Flags = 1 &lt;&lt; 3  <span class="c">// bit3 end        : device_write 的最后一个字节带 END 指示</span>
+	FlagTermChrSet Flags = 1 &lt;&lt; 7  <span class="c">// bit7 termchrset : device_read 使用 TermChar 作为终止符</span>
+)
+
+<span class="k">func</span> (f Flags) String() string  <span class="c">// "waitlock|end|termchrset"，0 时为 "0"</span></code></pre>
+
+<h3 id="reason">8.3 读取 reason 位 <code>ReadReason</code></h3>
+
+<pre><code><span class="k">type</span> ReadReason int32
+
+<span class="k">const</span> (
+	ReasonReqCnt ReadReason = 1 &lt;&lt; 0  <span class="c">// bit0 REQCNT : 已读满本次请求的字节数，可能还有更多数据</span>
+	ReasonChr    ReadReason = 1 &lt;&lt; 1  <span class="c">// bit1 CHR    : 读到终止符（仅在置了 termchrset 时有意义）</span>
+	ReasonEnd    ReadReason = 1 &lt;&lt; 2  <span class="c">// bit2 END    : 消息结束</span>
+)
+
+<span class="k">func</span> (r ReadReason) Has(bit ReadReason) bool  <span class="c">// 判断某位是否置位</span>
+<span class="k">func</span> (r ReadReason) String() string</code></pre>
+
+<div class="note">
+<b>关键：<code>reason == 0</code> 不是结束</b>
+设备可能返回了数据但 reason 全为 0，此时必须继续读（见 <a href="#longread">§7.2</a>）。
+只有 END / CHR / 空数据才算读完。
+</div>
+
+<h3 id="xdr">8.4 XDR 与记录标记</h3>
+
+<h4>XDR（RFC 4506）编码规则</h4>
+<ul>
+  <li>所有数据按 <b>4 字节对齐</b>，不足补 0。</li>
+  <li><code>int32</code> / <code>uint32</code>：<b>大端</b> 4 字节。</li>
+  <li><code>bool</code>：4 字节（0 / 1），<b>不是 1 字节</b>。</li>
+  <li><code>unsigned short</code> / <code>char</code>：在报文里同样是 <b>4 字节</b>（<code>TermChar</code> 也是 4 字节）。</li>
+  <li>变长 <code>opaque&lt;&gt;</code> / <code>string&lt;&gt;</code>：4 字节长度前缀 + 数据 + 补零到 4 字节边界。</li>
+  <li>字符串没有 <code>'\0'</code> 结尾，长度就是长度。</li>
+</ul>
+
+<h4>记录标记（RFC 5531 §11）</h4>
+<pre><code>每条 RPC 消息前面加一个 4 字节头（大端 uint32）：
+
+  bit31 = 1  最后一片（last fragment）
+  bit31 = 0  后面还有分片
+  bit0..30   本片的数据长度（&lt;= 0x7FFFFFFF）
+
+本包把一整条消息的所有分片合并在一次 Write 里发出（只有一片，置 bit31），
+读取时会循环收集分片直到遇到置了 bit31 的那片。</code></pre>
+
+<h4>VXI-11 结构体的字段顺序（规范 Section C.1）</h4>
+<pre><code><span class="c">// Create_LinkParms</span>
+int32 clientId; bool lockDevice; uint32 lock_timeout; string device;
+
+<span class="c">// Create_LinkResp</span>
+Device_ErrorCode error; int32 lid; uint16 abortPort; uint32 maxRecvSize;
+
+<span class="c">// Device_WriteParms</span>
+int32 lid; uint32 io_timeout; uint32 lock_timeout; Device_Flags flags; opaque data&lt;&gt;;
+
+<span class="c">// Device_WriteResp</span>
+Device_ErrorCode error; uint32 size;
+
+<span class="c">// Device_ReadParms</span>
+int32 lid; uint32 requestSize; uint32 io_timeout; uint32 lock_timeout;
+Device_Flags flags; char termChar;
+
+<span class="c">// Device_ReadResp</span>
+Device_ErrorCode error; int32 reason; opaque data&lt;&gt;;
+
+<span class="c">// Device_GenericParms（注意字段顺序）</span>
+int32 lid; Device_Flags flags; uint32 lock_timeout; uint32 io_timeout;
+
+<span class="c">// Device_LockParms            // Device_Link</span>
+int32 lid; Device_Flags flags; uint32 lock_timeout;   int32 lid;</code></pre>
+
+<p class="muted"><code>Device_GenericParms</code> 的字段顺序是 <code>lid, flags, lock_timeout, io_timeout</code>，
+与 <code>Device_WriteParms</code> 的 <code>lid, io_timeout, lock_timeout, flags</code> <b>不同</b>，
+两者很容易写反，本包用独立的结构体分别编解码。</p>
+</section>
+
+<!-- ==================================================================== -->
+<section id="demo">
+<h2>9. 演示程序</h2>
+
+<p><code>example/main.go</code> 是一个可直接对真实仪器运行的命令行演示，覆盖了绝大部分 API：</p>
+
+<pre><code>go run ./example -host 5.5.5.1 -device inst0 -q <span class="s">"*IDN?"</span> -stb -wave</code></pre>
+
+<h4>命令行参数</h4>
+<table>
+<tr><th>参数</th><th>默认值</th><th>说明</th></tr>
+<tr><td class="sig">-host</td><td><code>5.5.5.1</code></td><td>仪器 IP。</td></tr>
+<tr><td class="sig">-device</td><td><code>inst0</code></td><td>VXI-11 设备名。</td></tr>
+<tr><td class="sig">-timeout</td><td><code>5s</code></td><td>I/O 超时。</td></tr>
+<tr><td class="sig">-port</td><td><code>0</code></td><td>非 0 时跳过 portmapper，直连该 core 端口。</td></tr>
+<tr><td class="sig">-q</td><td><code>*IDN?</code></td><td>要执行的 SCPI 查询，可重复指定多次。</td></tr>
+<tr><td class="sig">-write</td><td>空</td><td>直接写入这条 SCPI 命令（不读应答）。</td></tr>
+<tr><td class="sig">-lock</td><td><code>false</code></td><td>执行 lock / unlock 并计时。</td></tr>
+<tr><td class="sig">-clear</td><td><code>false</code></td><td>执行 device_clear。</td></tr>
+<tr><td class="sig">-stb</td><td><code>false</code></td><td>读取状态字节。</td></tr>
+<tr><td class="sig">-wave</td><td>空</td><td>读取二进制块的 SCPI 命令，如 <code>:DISP:DATA?</code>（演示长响应分片拼接与定长块解析）。</td></tr>
+<tr><td class="sig">-bigwrite</td><td><code>0</code></td><td>写入 N 字节的长命令，演示超过 <code>maxRecvSize</code> 时的分片。</td></tr>
+<tr><td class="sig">-readsize</td><td><code>0</code></td><td>覆盖单次 <code>device_read</code> 的请求长度；0 = 默认 64 KiB。</td></tr>
+<tr><td class="sig">-writechunk</td><td><code>-1</code></td><td>覆盖写入分片大小；<code>0</code> 表示不分片。</td></tr>
+<tr><td class="sig">-v</td><td><code>false</code></td><td>输出每一步的详细过程。</td></tr>
+</table>
+
+<h4>程序流程</h4>
+<pre><code>Dial
+ ├─ 打印 lid / core 端口 / abortPort / maxRecvSize
+ ├─ Query(<span class="s">"*IDN?"</span>)
+ ├─ 逐个执行 -q 指定的查询
+ ├─ -stb  : Query(<span class="s">"*STB?"</span>) 并解码状态字节的各位含义
+ ├─ -lock : Lock / Unlock 并计时
+ ├─ -clear: Clear
+ ├─ -wave : :WAV:DATA? / :DISP:DATA? -> parseDefiniteLengthBlock 解析定长块
+ ├─ -bigwrite : 构造长命令验证分片写入
+ └─ Close</code></pre>
+
+<p>演示程序里还有两个可复用的辅助函数（在 <code>main_test.go</code> 中有单元测试）：</p>
+<table>
+<tr><th>函数</th><th>说明</th></tr>
+<tr><td class="sig">parseDefiniteLengthBlock(data []byte) ([]byte, error)</td>
+    <td>解析 IEEE 488.2 定长块 <code>#&lt;n&gt;&lt;len digits&gt;&lt;data&gt;</code>，返回其中的数据部分，并校验声明长度与实际长度。</td></tr>
+<tr><td class="sig">decodeSTB(b byte) string</td>
+    <td>把状态字节解码为易读的位描述（bit0..bit7）。</td></tr>
+</table>
+</section>
+
+<!-- ==================================================================== -->
+<section id="test">
+<h2>10. 测试</h2>
+
+<h3>单元测试（无需硬件）</h3>
+<pre><code>go test ./...
+go test -cover ./vxi11/</code></pre>
+
+<p>包内实现了一个内存"假仪器"<code>mockDevice</code>（<code>mockdevice_test.go</code>），
+同时扮演 portmapper、<code>DEVICE_CORE</code> 与 <code>DEVICE_ASYNC</code> 三个程序，
+因此 <code>Dial → Query → Read/Write → Lock/Unlock/Clear → Close</code> 会真的走一遍
+ONC RPC + XDR + 记录标记，而不是打桩。它可以模拟：</p>
+<ul>
+  <li>设备名不存在（错误码 3）</li>
+  <li>portmapper 未注册（返回端口 0）</li>
+  <li>锁被其它 link 占用（错误码 11）与 <code>waitlock</code> 等待</li>
+  <li>返回数据但 <code>reason</code> 全 0（验证客户端会继续读）</li>
+  <li>写入超过 <code>maxRecvSize</code>（返回错误码 5，验证客户端确实分片）</li>
+  <li><code>device_read</code> 延迟与失败（验证超时与连接熔断）</li>
+  <li><code>create_intr_chan</code> 后回连客户端的 DEVICE_INTR 服务端，
+      并在 <code>device_enable_srq</code> 时真的发一个 <code>device_intr_srq</code>（SRQ 全链路）</li>
+  <li><code>device_docmd</code> 支持 / 不支持（错误码 8）两种情形</li>
+</ul>
+
+<h3>集成测试（对真实仪器，默认跳过）</h3>
+<p>集成测试用 build tag 隔离，默认<b>不编译也不运行</b>，只有显式指定 tag 与环境时才跑：</p>
+
+<pre><code><span class="c"># 方式一：命令行参数</span>
+go test -tags integration -v ./vxi11/ -host 5.5.5.1
+
+<span class="c"># 方式二：环境变量</span>
+<span class="c"># PowerShell</span>
+$env:VXI11_HOST=<span class="s">"5.5.5.1"</span>; $env:VXI11_DEVICE=<span class="s">"inst0"</span>; go test -tags integration -v ./vxi11/
+<span class="c"># bash</span>
+VXI11_HOST=5.5.5.1 VXI11_DEVICE=inst0 go test -tags integration -v ./vxi11/</code></pre>
+
+<table>
+<tr><th>参数 / 环境变量</th><th>默认</th><th>说明</th></tr>
+<tr><td class="sig">-host / VXI11_HOST</td><td>空</td><td>被测仪器 IP。<b>为空时所有集成测试自动 Skip</b>。</td></tr>
+<tr><td class="sig">-device / VXI11_DEVICE</td><td>空</td><td>设备名，空则用 <code>DefaultDevice</code>。</td></tr>
+<tr><td class="sig">-io-timeout</td><td><code>10s</code></td><td>I/O 超时。</td></tr>
+<tr><td class="sig">VXI11_LONG_CMD</td><td><code>:DISP:DATA?</code></td><td>长响应测试用的命令。默认命令读超时时自动退到泰克路线（<code>SAVe:IMAGe</code> + <code>FILESystem:READFile</code>）。</td></tr>
+<tr><td class="sig">VXI11_ERR_CMD</td><td>自动</td><td>错误队列查询命令；不设置时先试 <code>:SYST:ERR?</code>，读超时自动退到泰克的 <code>ALLEv?</code>。</td></tr>
+</table>
+
+<h4>集成测试清单</h4>
+<table>
+<tr><th>测试</th><th>验证内容</th></tr>
+<tr><td><code>TestIntegrationPortmapAndCreateLink</code></td><td>portmapper 端口发现 + <code>create_link</code>。</td></tr>
+<tr><td><code>TestIntegrationQueryIDN</code></td><td><code>Query("*IDN?")</code> 返回仪器识别字符串。</td></tr>
+<tr><td><code>TestIntegrationReadSTB</code></td><td><code>device_readstb</code>；仪器不支持时 Skip。</td></tr>
+<tr><td><code>TestIntegrationLockUnlock</code></td><td><code>device_lock</code> / <code>device_unlock</code>。</td></tr>
+<tr><td><code>TestIntegrationClear</code></td><td><code>device_clear</code>。</td></tr>
+<tr><td><code>TestIntegrationLongResponse</code></td><td>超过 <code>maxRecvSize</code> 的长响应拼接，并校验 IEEE 488.2 定长块的声明长度。</td></tr>
+<tr><td><code>TestIntegrationWriteFragmentation</code></td><td>分片写入后检查仪器错误队列（<code>:SYST:ERR?</code>，自动回退 <code>ALLEv?</code>）。</td></tr>
+<tr><td><code>TestIntegrationAbortChannel</code></td><td>abort channel；仪器不支持或实现有缺陷时 Skip。</td></tr>
+<tr><td><code>TestIntegrationDocmd</code></td><td><code>device_docmd</code>；仪器不支持该 cmd 时 Skip（错误码 8 即预期行为）。</td></tr>
+<tr><td><code>TestIntegrationIntrSRQ</code></td><td>interrupt channel 全链路：<code>create_intr_chan</code> → <code>device_enable_srq</code> → <code>*OPC</code> 触发 → 收到 <code>device_intr_srq</code> 回调。</td></tr>
+</table>
+
+<h3>静态检查</h3>
+<pre><code>gofmt -l .
+go vet ./...
+go vet -tags integration ./...</code></pre>
+</section>
+
+<!-- ==================================================================== -->
+<section id="limit">
+<h2>11. 已知限制</h2>
+
+<table>
+<tr><th>项</th><th>状态</th><th>说明</th></tr>
+<tr><td><code>device_docmd</code> (22)</td><td>已实现，仪器相关</td>
+    <td><code>Docmd</code> 已实现完整编解码；<code>cmd</code> 取值由厂商定义，LAN 示波器一般返回错误码 8（实测 Tektronix MSO58）。</td></tr>
+<tr><td>interrupt channel<br><code>create_intr_chan</code> / <code>destroy_intr_chan</code> / <code>device_intr_srq</code></td><td>已实现</td>
+    <td><code>CreateIntrChan</code> 在本机起 DEVICE_INTR 服务端并告知设备，<code>OnSRQ</code> 回调接收 <code>device_intr_srq</code>。实测 Tektronix MSO58 全链路可用。仅支持 TCP interrupt channel（规范要求设备必须支持 TCP，UDP 为可选）。</td></tr>
+<tr><td>仪器把每次 device_write 当完整消息</td><td>需配置</td>
+    <td>RIGOL DS1000Z 系列不接受分片写入，需要用 <code>WithWriteChunkSize(0)</code> 关闭分片。</td></tr>
+<tr><td><code>device_readstb</code> / <code>device_abort</code></td><td>仪器相关</td>
+    <td>部分仪器（实测 RIGOL DS1104Z）返回错误码 8 不支持，改用 SCPI 的 <code>*STB?</code> 或普通超时。
+        Tektronix MSO58 的 abort channel 有缺陷：<code>device_abort</code> 报错误码 4 或无应答。</td></tr>
+<tr><td>客户端侧无自动重连</td><td>设计如此</td>
+    <td>连接熔断后由调用方重新 <code>Dial</code>，避免在错误的链路上重试。</td></tr>
+<tr><td>只支持 IPv4/IPv6 上的 ONC RPC over TCP</td><td>设计如此</td>
+    <td>不支持 UDP 传输（规范允许，但仪器基本都用 TCP）。interrupt channel 的地址通告只支持 IPv4（规范的 <code>hostAddr</code> 就是 32 位整数）。</td></tr>
+<tr><td>AUTH_NULL</td><td>设计如此</td>
+    <td>VXI-11 仪器都使用无认证方式，不支持 AUTH_UNIX/AUTH_DES。</td></tr>
+</table>
+
+<h4>TODO / 后续可做</h4>
+<ul>
+  <li>可选的自动重连包装（在熔断后重新 <code>Dial</code> 并重放 link 状态）。</li>
+</ul>
+</section>
+
+<!-- ==================================================================== -->
+<section id="realworld">
+<h2>12. 真机实测记录</h2>
+
+<p>以下数据来自对 RIGOL DS1104Z（IP <code>5.5.5.1</code>）的实测，可作为排查类似仪器的参考。</p>
+
+<h3>建链结果</h3>
+<pre><code>portmapper GETPORT(prog=0x0607AF, vers=1, prot=TCP)  →  端口 618
+create_link(clientId=随机, lockDevice=false, device=<span class="s">"inst0"</span>)
+  ├─ lid          = 0
+  ├─ maxRecvSize  = 1500
+  └─ abortPort    = 619
+
+*IDN?  →  RIGOL TECHNOLOGIES,DS1104Z,DS1ZA212606163,00.04.04.SP4</code></pre>
+
+<h3>现象与结论</h3>
+
+<table>
+<tr><th>现象</th><th>结论 / 处理</th></tr>
+<tr>
+  <td><code>device_readstb</code> 返回错误码 8（operation not supported）</td>
+  <td>该机型不支持此过程，改用 <code>Query("*STB?")</code>。集成测试里对此 Skip 而非判失败。</td>
+</tr>
+<tr>
+  <td>通告了 <code>abortPort=619</code>，但 <code>device_abort</code> 也返回错误码 8</td>
+  <td>通告归通告，实际不支持。<code>Abort</code> 会返回 <code>ErrOperationNotSupported</code>。</td>
+</tr>
+<tr>
+  <td>一次 <code>device_write</code> 发送 3006 字节（&gt; maxRecvSize=1500）→ 错误码 5</td>
+  <td><b>证明必须按 <code>maxRecvSize</code> 分片。</b>本包的默认行为正是如此。</td>
+</tr>
+<tr>
+  <td>分片写入 3006 字节后 <code>:SYST:ERR?</code> 报 <code>-101,"Invalid character"</code></td>
+  <td>定位后确认<b>不是分片造成的</b>，而是载荷本身以 <code>"*CLS;\n"</code> 结尾——<code>;</code> 后面直接跟消息终止符是非法 SCPI。
+      改成 <code>"*CLS;"</code> 重复 + 最后一条带 <code>\n</code> 后错误队列为 <code>0,"No error"</code>。</td>
+</tr>
+<tr>
+  <td>读 1,152,066 字节的 <code>:DISP:DATA?</code></td>
+  <td>用 <code>requestSize = maxRecvSize = 1500</code> 需要 <b>72 秒</b>；
+      改成 64 KiB 只需 <b>3.4 秒</b>（约 21 倍）。这就是 <code>defaultReadSize = 64 KiB</code> 的由来。<br>
+      返回的定长块头为 <code>#9001152054</code>，声明 1,152,054 字节，与实际收到的数据一致。</td>
+</tr>
+</table>
+
+<div class="warn">
+<b>对同类仪器的两点建议</b>
+<ol style="margin:6px 0 0">
+  <li>先做一次小规模实测确认仪器是否接受分片写入，不接受就用 <code>WithWriteChunkSize(0)</code>。</li>
+  <li>读大块二进制数据时用 <code>QueryBytes</code> 而不是 <code>Query</code>——前者不设终止符，二进制安全。</li>
+</ol>
+</div>
+
+<h3>Tektronix MSO58（IP <code>10.42.71.185</code>）</h3>
+
+<pre><code>portmapper GETPORT(prog=0x0607AF, vers=1, prot=TCP)  →  端口 7000
+create_link(device=<span class="s">"inst0"</span>)
+  ├─ lid          = -1161953280
+  ├─ maxRecvSize  = 4096
+  └─ abortPort    = 7001
+
+*IDN?  →  TEKTRONIX,MSO58,B014368,CF:91.1CT FV:2.12.5.2206</code></pre>
+
+<table>
+<tr><th>现象</th><th>结论 / 处理</th></tr>
+<tr>
+  <td><code>device_readstb</code> 正常返回状态字节 0x00；锁、<code>device_clear</code>、<code>device_trigger</code> 均正常</td>
+  <td>核心功能完整可用。</td>
+</tr>
+<tr>
+  <td><code>:SYST:ERR?</code> 查询读超时（设备错误码 15）</td>
+  <td>该机不支持该命令，错误队列用泰克的 <code>ALLEv?</code>。<b>注意：不认识的查询不会产生任何响应</b>，
+      <code>device_read</code> 会一直等到设备侧超时——新仪器先用 <code>*IDN?</code> 验证命令。</td>
+</tr>
+<tr>
+  <td><code>:DISP:DATA?</code> 读超时</td>
+  <td>不支持。截图走 <code>SAVe:IMAGe "C:/Temp/screen.png"</code> +
+      <code>FILESystem:READFile 'C:/Temp/screen.png'</code>，实测读回 206,827 字节裸 PNG（非定长块），耗时约 10 ms。</td>
+</tr>
+<tr>
+  <td>8200 字节写入按 <code>maxRecvSize=4096</code> 分 3 片，错误队列无报错</td>
+  <td>该机接受分片 <code>device_write</code>（与 RIGOL DS1000Z 不同）。</td>
+</tr>
+<tr>
+  <td>通告 <code>abortPort=7001</code>，但 <code>device_abort</code> 无在途操作时返回错误码 4
+      （invalid link identifier），有在途 <code>device_read</code> 时不应答（网络超时）</td>
+  <td><b>abort channel 是坏的</b>（lid 明明有效却报 invalid link identifier，且不能中断在途读）。
+      需要中断操作时建议直接 <code>Close</code> 后重新 <code>Dial</code>。集成测试对此 Skip。</td>
+</tr>
+<tr>
+  <td>interrupt channel 全链路实测通过</td>
+  <td><code>CreateIntrChan</code> → <code>EnableSRQ(true, handle)</code> → 写 <code>*ESE 1; *SRE 32; *OPC</code>
+      → 收到 <code>device_intr_srq</code> 回调，<code>handle</code> 原样带回。</td>
+</tr>
+<tr>
+  <td><code>device_docmd</code>（cmd=0）返回错误码 8</td>
+  <td>预期行为：该机不支持任何 docmd 命令。</td>
+</tr>
+</table>
+</section>
+
+<footer>
+  go-vxi/vxi11 接口说明文档 · 对应 VXI-11 Rev 1.0 规范 · 纯 Go 实现，无第三方依赖、无 cgo
+</footer>
+
+</main>
+</div>
+</body>
+</html>
