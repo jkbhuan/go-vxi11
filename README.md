@@ -1,4 +1,4 @@
-# go-vxi
+# go-vxi11
 
 纯 Go 实现的 **VXI-11（TCP/IP Instrument Protocol）客户端**，用于通过 LAN 控制示波器、信号源、
 万用表等支持 VXI-11 的仪器。
