@@ -12,7 +12,7 @@
 //
 // 退出码：0 成功，1 任一步骤失败。
 package main
-
+ 
 import (
 	"errors"
 	"flag"
